@@ -39,7 +39,7 @@ struct SettingsScreen: View {
 
                 Section("About") {
                     LabeledContent("Version", value: "1.0.0")
-                    Link("Github", destination: URL(string: "https://example.com")!)
+                    Link("Github", destination: URL(string: "https://github.com/TheMallyGuy/living-in-the-bushes")!)
                 }
 
                 Section {
