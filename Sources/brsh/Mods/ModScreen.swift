@@ -1,17 +1,38 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct Mod: Identifiable, Codable {
+struct Mod: Identifiable, Codable, Equatable {
     var id = UUID()
     var name: String
     var enabled: Bool
-    var url: URL
+    var fileName: String
+    var url: URL { URL.documentsDirectory.appending(path: fileName) }
+}
+
+enum ModStore {
+    static let file = URL.documentsDirectory.appending(path: "mods.json")
+
+    static func load() -> [Mod] {
+        guard let data = try? Data(contentsOf: file),
+              let mods = try? JSONDecoder().decode([Mod].self, from: data) else { return [] }
+        return mods.filter { FileManager.default.fileExists(atPath: $0.url.path) }
+    }
+
+    static func save(_ mods: [Mod]) {
+        do {
+            try JSONEncoder().encode(mods).write(to: file, options: .atomic)
+        } catch {
+            log.error("saving mods failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
 }
 
 struct ModScreen: View {
     @State private var isPresented = false
     @State private var selectedFileURL: URL?
-    @State private var mods: [Mod] = []
+    @State private var mods: [Mod] = ModStore.load()
+    @State private var patching = false
+    @State private var patchedURL: URL?
 
     var body: some View {
         NavigationStack {
@@ -33,7 +54,8 @@ struct ModScreen: View {
                                 try FileManager.default.copyItem(at: url, to: dest)
 
                                 let name = url.deletingPathExtension().lastPathComponent
-                                mods.append(Mod(name: name, enabled: true, url: dest))
+                                mods.removeAll { $0.fileName == dest.lastPathComponent }  // re-import replaces
+                                mods.append(Mod(name: name, enabled: true, fileName: dest.lastPathComponent))
                             } catch {
                                 print("Import failed: \(error)")
                             }
@@ -64,13 +86,29 @@ struct ModScreen: View {
                 }
 
                 Section("Roblox") {
-                    Button("Patch roblox with enabled mods") {
-                        // logic later!!111
+                    Button {
+                        patching = true
+                        let enabled = mods.filter(\.enabled).map(\.url)
+                        Task {
+                            patchedURL = await patchRoblox(modZips: enabled)
+                            patching = false
+                        }
+                    } label: {
+                        HStack {
+                            Text(patching ? "Patching…" : "Patch roblox with enabled mods")
+                            if patching { Spacer(); ProgressView() }
+                        }
+                    }
+                    .disabled(patching)
+
+                    if let patchedURL {
+                        ShareLink("Open patched IPA (LiveContainer)", item: patchedURL)
                     }
                 }
             }
             .navigationTitle("Mods")
             .toolbar { EditButton() }
+            .onChange(of: mods) { _, newMods in ModStore.save(newMods) }  // add/delete/toggle/reorder
         }
     }
 
