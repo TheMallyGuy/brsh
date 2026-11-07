@@ -1,0 +1,50 @@
+name: Release
+
+# Builds an unsigned brsh.ipa and publishes it as a GitHub release.
+# Trigger: push a tag like v0.1.0, or run manually from the Actions tab.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26 # Xcode 26+ needed for the iOS 26 SDK
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      XTOOL_VERSION: "1.24.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xtool
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xtool.zip" \
+            "https://github.com/xtool-org/xtool/releases/download/$XTOOL_VERSION/xtool.app.zip"
+          ditto -x -k "$RUNNER_TEMP/xtool.zip" "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xtool.app/Contents/MacOS" >> "$GITHUB_PATH"
+
+      - name: Versions
+        run: |
+          xcodebuild -version
+          xtool --version
+
+      - name: Build unsigned IPA
+        run: xtool dev build --configuration release --ipa
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          IPA="brsh-$TAG.ipa"
+          cp xtool/brsh.ipa "$IPA"
+          gh release create "$TAG" "$IPA" \
+            --title "brsh $TAG" \
+            --generate-notes \
+            --target "$GITHUB_SHA"
