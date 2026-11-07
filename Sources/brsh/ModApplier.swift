@@ -17,13 +17,20 @@ struct Asset: Codable {
 private let ipaPrefix = "com.roblox.robloxmobile-"
 
 private func cachedIpas() -> [URL] {
-    let files = (try? FileManager.default.contentsOfDirectory(
-        at: URL.documentsDirectory, includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
-    return files
+    let files =
+        (try? FileManager.default.contentsOfDirectory(
+            at: URL.documentsDirectory, includingPropertiesForKeys: [.contentModificationDateKey]))
+        ?? []
+    return
+        files
         .filter { $0.lastPathComponent.hasPrefix(ipaPrefix) && $0.pathExtension == "ipa" }
         .sorted {
-            let a = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
-            let b = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+            let a =
+                (try? $0.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate) ?? .distantPast
+            let b =
+                (try? $1.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate) ?? .distantPast
             return a > b
         }
 }
@@ -32,8 +39,7 @@ private func fileSize(_ url: URL) -> Int {
     (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? -1
 }
 
-/// Returns the latest Roblox IPA, downloading only if that version isn't cached.
-/// Offline or API error: falls back to the newest cached IPA.
+
 @discardableResult
 func downloadRobloxIpa() async -> URL? {
     log.notice("checking latest roblox")
@@ -45,12 +51,20 @@ func downloadRobloxIpa() async -> URL? {
     else { return nil }
 
     do {
-        let (data, _) = try await URLSession.shared.data(from: asset_rel)
+        let token = SettingsStore.load().githubToken
+
+        var request = URLRequest(url: asset_rel)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+
         let assets = try JSONDecoder().decode(AssetsResponse.self, from: data)
 
         for asset in assets.assets {
             log.notice("asset name: \(asset.name, privacy: .public)")
-            guard asset.name.hasSuffix(".ipa"), let downloadURL = URL(string: asset.browser_download_url) else { continue }
+            guard asset.name.hasSuffix(".ipa"),
+                let downloadURL = URL(string: asset.browser_download_url)
+            else { continue }
 
             let ipaFileURL = URL.documentsDirectory.appending(path: asset.name)
 
@@ -95,7 +109,9 @@ func patchRoblox(modZips: [URL]) async -> URL? {
             let out = URL.documentsDirectory.appending(path: "Roblox-patched.ipa")
             let start = Date()
             let files = try IpaPatcher.patch(ipa: ipaURL, mods: modZips, output: out)
-            log.notice("patched \(files) file(s) in \(Date().timeIntervalSince(start), format: .fixed(precision: 2))s")
+            log.notice(
+                "patched \(files) file(s) in \(Date().timeIntervalSince(start), format: .fixed(precision: 2))s"
+            )
             log.notice("patched IPA: \(out.path, privacy: .public)")
             return out
         } catch {
