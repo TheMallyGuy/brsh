@@ -6,7 +6,6 @@ let package = Package(
     name: "brsh",
     platforms: [
         .iOS(.v26),
-        .macOS(.v26),
     ],
     products: [
         // An xtool project should contain exactly one library product,
@@ -14,11 +13,14 @@ let package = Package(
         .library(
             name: "brsh",
             targets: ["brsh"]
-        ),
+        )
     ],
     targets: [
         .target(
-            name: "brsh"
-        ),
+            name: "brsh",
+            resources: [
+                .copy("Resources/rblx-ptch.js")
+            ]
+        )
     ]
 )
