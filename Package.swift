@@ -17,10 +17,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "brsh",
-            resources: [
-                .copy("Resources/rblx-ptch.js")
-            ]
+            name: "brsh"
         )
     ]
 )
