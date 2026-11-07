@@ -2,34 +2,6 @@ import Foundation
 import Network
 import UIKit
 
-enum FFlagStore {
-    static let file = URL.documentsDirectory.appending(path: "fflags.json")
-    static let defaultJSON = """
-        {
-          "DFIntTaskSchedulerTargetFps": "240",
-          "FIntFRMMinGrassDistance": "100",
-          "FFlagDebugSkyGray": "true",
-          "DFFlagDisableDPIScale": "true"
-        }
-        """
-
-    static func load() -> String {
-        (try? String(contentsOf: file, encoding: .utf8)) ?? defaultJSON
-    }
-
-    static func save(_ text: String) -> String? {
-        guard let data = text.data(using: .utf8),
-            (try? JSONSerialization.jsonObject(with: data)) is [String: Any]
-        else { return "Not a valid JSON object" }
-        do {
-            try data.write(to: file, options: .atomic)
-            return nil
-        } catch {
-            return error.localizedDescription
-        }
-    }
-}
-
 final class FFlagServer: @unchecked Sendable {
     static let shared = FFlagServer()
     static let port: NWEndpoint.Port = 8777
