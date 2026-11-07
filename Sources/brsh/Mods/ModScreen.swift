@@ -95,7 +95,7 @@ struct ModScreen: View {
                         }
                     } label: {
                         HStack {
-                            Text(patching ? "Patching…" : "Patch roblox with enabled mods")
+                            Text(patching ? "Patching… (please!!! keep brsh open!!!)" : "Patch roblox with enabled mods")
                             if patching { Spacer(); ProgressView() }
                         }
                     }
