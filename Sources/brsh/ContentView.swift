@@ -10,7 +10,7 @@ struct ContentView: View {
         NavigationStack {
             List {
                 NavigationLink("Mods") { ModScreen() }
-                NavigationLink("FastFlags") { SettingsScreen() }
+                NavigationLink("Settings") { SettingsScreen() }
             }
             .navigationTitle("Home")
         }
