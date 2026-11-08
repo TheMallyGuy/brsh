@@ -103,13 +103,13 @@ enum FFlagPreset {
     }
 
     static func parallelWorkers() -> Int? {
-        guard let fFlags = parseConfig(FFlagStore.load()) else { return 0 }
+        guard let fFlags = parseConfig(FFlagStore.load()) else { return 8 }
 
         let value = fFlags[parallelLuaWorkers]
         if let n = value as? Int { return n }
         if let s = value as? String { return Int(s) }  // handles string too
 
-        return 0
+        return 8
     }
 
     static func pauseVoxelizer() -> Bool? {
