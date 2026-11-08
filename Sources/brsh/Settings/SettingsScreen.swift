@@ -38,7 +38,9 @@ struct SettingsScreen: View {
                 }
 
                 Section("About") {
-                    LabeledContent("Version", value: "1.0.0")
+                    LabeledContent(
+                        "Version",
+                        value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?")
                     Link("Github", destination: URL(string: "https://github.com/TheMallyGuy/living-in-the-bushes")!)
                 }
 
