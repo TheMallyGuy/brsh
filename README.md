@@ -9,4 +9,4 @@ Install [LiveContainer](https://github.com/LiveContainer/LiveContainer/releases/
 
 ## AI Disclaimer
 
-Only [IpaPatcher.swift](./Sources/brsh/IpaPatcher.swift) is AI generated (rewrite of ipa-patcher in swift). I've use claude to assist me on understanding hows UI in Swift works. Beyond that everything is human written
+Only [IpaPatcher.swift](./Sources/brsh/IpaPatcher.swift) is AI generated (rewrite of ipa-patcher in swift). Reason is the compiled typescript version took AGES to run. I've use claude to assist me on understanding hows UI in Swift works. Beyond that everything is human written
