@@ -44,7 +44,12 @@ jobs:
         run: |
           IPA="brsh-$TAG.ipa"
           cp xtool/brsh.ipa "$IPA"
-          gh release create "$TAG" "$IPA" \
-            --title "brsh $TAG" \
-            --generate-notes \
-            --target "$GITHUB_SHA"
+          # Release may already exist (made by hand on GitHub): attach the IPA instead of failing.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$IPA" --clobber
+          else
+            gh release create "$TAG" "$IPA" \
+              --title "brsh $TAG" \
+              --generate-notes \
+              --target "$GITHUB_SHA"
+          fi
