@@ -1,4 +1,11 @@
-# brsh 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./Icon/AppIcon-dark.png">
+    <img src="./Icon/AppIcon.png" width="128" alt="brsh logo">
+  </picture>
+</p>
+<h1 align="center">brsh</h1>
+
 You can say this is an mod loader for roblox on ios, its pretty much like what a booststrapper modding stuff do
 
 _This is also my first experincce with Swift. Contributions are welcome!_
