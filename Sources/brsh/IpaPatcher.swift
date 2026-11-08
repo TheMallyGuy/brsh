@@ -5,6 +5,8 @@ import Compression
 import CZlib  // Linux test harness only
 #endif
 
+typealias PatchStatus = @Sendable (String) -> Void
+
 /// Applies mod zips to a Roblox IPA without recompressing it.
 /// Unchanged entries are copied as raw compressed bytes; mod files are added stored (uncompressed).
 enum IpaPatcher {
@@ -14,10 +16,11 @@ enum IpaPatcher {
 
     /// Patches `ipa` with `mods` (in order; later mods win) into `output`. Returns number of mod files written.
     @discardableResult
-    static func patch(ipa: URL, mods: [URL], output: URL) throws -> Int {
+    static func patch(ipa: URL, mods: [URL], output: URL, status: PatchStatus = { _ in }) throws -> Int {
         var replacements: [String: Data] = [:]
         var order: [String] = []
-        for mod in mods {
+        for (n, mod) in mods.enumerated() {
+            status("Reading mod \(n + 1)/\(mods.count): \(mod.deletingPathExtension().lastPathComponent)")
             for (rel, data) in try modFiles(mod) {
                 let path = modRoot + rel
                 if replacements[path] == nil { order.append(path) }
@@ -33,6 +36,11 @@ enum IpaPatcher {
         var pos = 0
         var central = Data()
         var count = 0
+        var lastPct = -1
+        func report(_ label: String, _ done: Int, of total: Int) {
+            let pct = done * 100 / max(total, 1)
+            if pct != lastPct { lastPct = pct; status("\(label) \(pct)%") }
+        }
 
         // 1. copy unchanged entries byte-for-byte (local header + data + optional descriptor)
         let sorted = src.entries.sorted { $0.localOffset < $1.localOffset }
@@ -44,10 +52,13 @@ enum IpaPatcher {
             central.append(record)
             pos += end - entry.localOffset
             count += 1
+            report("Copying Roblox files", entry.localOffset, of: src.centralOffset)
         }
 
         // 2. append mod files, stored
-        for path in order {
+        lastPct = -1
+        for (k, path) in order.enumerated() {
+            report("Adding \(order.count) mod files", k + 1, of: order.count)
             let data = replacements[path]!
             let name = Data(path.utf8)
             let crc = crc32(data)
@@ -76,6 +87,7 @@ enum IpaPatcher {
         }
 
         // 3. central directory + end record
+        status("Writing IPA index")
         out.write(central)
         var eocd = Data()
         eocd += le32(0x0605_4B50) + le16(0) + le16(0) + le16(count) + le16(count)

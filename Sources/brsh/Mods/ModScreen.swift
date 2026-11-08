@@ -33,6 +33,8 @@ struct ModScreen: View {
     @State private var mods: [Mod] = ModStore.load()
     @State private var patching = false
     @State private var patchedURL: URL?
+    @State private var patchStatus: String?
+    @State private var downloadProgress: Double?
 
     var body: some View {
         NavigationStack {
@@ -88,10 +90,16 @@ struct ModScreen: View {
                 Section("Roblox") {
                     Button {
                         patching = true
+                        patchStatus = nil
                         let enabled = mods.filter(\.enabled).map(\.url)
                         Task {
-                            patchedURL = await patchRoblox(modZips: enabled)
+                            patchedURL = await patchRoblox(
+                                modZips: enabled,
+                                status: { line in Task { @MainActor in patchStatus = line } },
+                                downloadProgress: { value in Task { @MainActor in downloadProgress = value } }
+                            )
                             patching = false
+                            downloadProgress = nil  // a late poll update can't leave the bar up
                         }
                     } label: {
                         HStack {
@@ -100,6 +108,18 @@ struct ModScreen: View {
                         }
                     }
                     .disabled(patching)
+
+                    if let downloadProgress {
+                        ProgressView(value: downloadProgress) {
+                            Text("\(Int(downloadProgress * 100))%").font(.footnote)
+                        }
+                    }
+
+                    if let patchStatus {
+                        Text(patchStatus)
+                            .font(.footnote)
+                            .foregroundStyle(patchStatus.hasPrefix("Failed") ? .red : .secondary)
+                    }
 
                     if let patchedURL {
                         ShareLink("Open patched IPA (LiveContainer)", item: patchedURL)

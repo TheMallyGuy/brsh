@@ -43,7 +43,7 @@ struct FFlagScreen: View {
                 Text("fflags.json")
             } footer: {
                 Text(
-                    "Served at http://127.0.0.1:8777/fflags.json, you may open Roblox with the tweak now"
+                    "Saved to LiveContainer/fflags.json, you may open Roblox with the tweak now"
                 )
             }
 

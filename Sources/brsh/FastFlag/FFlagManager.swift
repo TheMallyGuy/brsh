@@ -1,7 +1,17 @@
 import Foundation
 
 enum FFlagStore {
-    static let file = URL.documentsDirectory.appending(path: "fflags.json")
+    // Shared with the RBXFFlags tweak: inside LiveContainer every guest's
+    // Documents is nested under LiveContainer's own Documents, so both apps
+    // resolve the path up to the FIRST "/Documents" to the same file.
+    // Must match lcRootDoc() in ipa-patcher/tweak/Tweak.xm.
+    static let file: URL = {
+        let guest = URL.documentsDirectory.path
+        guard let r = guest.range(of: "/Documents") else {
+            return URL.documentsDirectory.appending(path: "fflags.json")
+        }
+        return URL(filePath: String(guest[..<r.upperBound])).appending(path: "fflags.json")
+    }()
     static let defaultJSON = """
         {
 
@@ -115,19 +125,17 @@ enum FFlagPreset {
     static func pauseVoxelizer() -> Bool? {
         guard let fFlags = parseConfig(FFlagStore.load()) else { return false }
 
-        let value = fFlags[voxelizerFlag]
-        if let n = value as? Bool { return n }
-
-        return false
+        return isTrue(fFlags[voxelizerFlag])
     }
 
     static func skyGray() -> Bool? {
         guard let fFlags = parseConfig(FFlagStore.load()) else { return false }
+        return isTrue(fFlags[skyGrayFlag])
+    }
 
-        let value = fFlags[skyGrayFlag]
-        if let n = value as? Bool { return n }
-
-        return false
+    private static func isTrue(_ value: Any?) -> Bool {
+        if let b = value as? Bool { return b }
+        return (value as? String)?.lowercased() == "true"
     }
 
     static func apply(
