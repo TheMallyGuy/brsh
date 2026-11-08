@@ -27,55 +27,43 @@ struct FFlagPresetScreen: View {
         Form {
             Section {
                 Toggle(isOn: $noTelemetry) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Fuck Telementry").font(.headline)
-                        Text("Disable all telementry & Data collecting").font(.subheadline)
-                            .foregroundStyle(
-                                .secondary)
-                    }
+                    SettingLabel(
+                        title: "Fuck Telementry",
+                        subtitle: "Disable all telementry & Data collecting"
+                    )
                 }
 
                 Toggle(isOn: $lighting) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Complete Post-Processing & Shadow Stripping").font(.headline)
-                        Text(
+                    SettingLabel(
+                        title: "Complete Post-Processing & Shadow Stripping",
+                        subtitle:
                             "Disables depth of field, bloom, sun rays, global shadows, and blur shaders"
-                        ).font(.subheadline)
-                            .foregroundStyle(
-                                .secondary)
-                    }
+                    )
                 }
 
                 Toggle(isOn: $skyGray) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Make the sky gray").font(.headline)
-                        Text(
+                    SettingLabel(
+                        title: "Make the sky gray",
+                        subtitle:
                             "description"
-                        ).font(.subheadline)
-                            .foregroundStyle(
-                                .secondary)
-                    }
+                    )
                 }
 
                 Toggle(isOn: $pauseVoxelizer) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Pause voxelizer").font(.headline)
-                        Text("Pauses the dynamic voxel lighting updates").font(.subheadline)
-                            .foregroundStyle(
-                                .secondary)
-                    }
+                    SettingLabel(
+                        title: "Pause voxelizer",
+                        subtitle:
+                            "Pauses the dynamic voxel lighting updates"
+                    )
                 }
 
                 Stepper(value: $parallelWorkers, in: 1...25) {
                     HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Parallel Lua Worker Thread Allocation").font(.headline)
-                            Text(
+                        SettingLabel(
+                            title: "Parallel Lua Worker Thread Allocation",
+                            subtitle:
                                 "Forces the engine to utilize a specific number of background worker threads for parallel script execution and internal state management"
-                            ).font(.subheadline)
-                                .foregroundStyle(
-                                    .secondary)
-                        }
+                        )
                         Spacer()
                         Text("\(parallelWorkers) workers")
                             .monospacedDigit()
@@ -103,7 +91,8 @@ struct FFlagPresetScreen: View {
                 Button("Save") {
                     if let err = FFlagPreset.apply(
                         noTelemetry: noTelemetry, lighting: lighting,
-                        pauseVoxelizer: pauseVoxelizer, msaa: msaa, skyGray: skyGray, pararellWorkers: parallelWorkers)
+                        pauseVoxelizer: pauseVoxelizer, msaa: msaa, skyGray: skyGray,
+                        pararellWorkers: parallelWorkers)
                     {
                         message = err
                     } else {
