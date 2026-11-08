@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./Icon/AppIcon-dark.png">
-    <img src="./Icon/AppIcon.png" width="128" alt="brsh logo">
+    <source media="(prefers-color-scheme: dark)" srcset="./Icon/AppIcon.png">
+    <img src="./Icon/AppIcon-dark.png" width="128" alt="brsh logo">
   </picture>
 </p>
 <h1 align="center">brsh</h1>
