@@ -6,7 +6,13 @@ struct FFlagScreen: View {
 
     var body: some View {
         Form {
-            Text("FFlags require an custom tweak. You can view the guide on the readme to install the tweak.")
+            Text(
+                "FFlags require an custom tweak. You can view the guide on the readme to install the tweak."
+            )
+            Text("The allowlist doesnt apply for ios due to how the tweak edit fflags")
+
+            NavigationLink("Fastflags Presets") { FFlagPresetScreen() }
+
             Section {
                 TextEditor(text: $text)
                     .font(.system(.footnote, design: .monospaced))
@@ -16,7 +22,9 @@ struct FFlagScreen: View {
             } header: {
                 Text("fflags.json")
             } footer: {
-                Text("Served at http://127.0.0.1:8777/fflags.json, you may open Roblox with the tweak now")
+                Text(
+                    "Served at http://127.0.0.1:8777/fflags.json, you may open Roblox with the tweak now"
+                )
             }
 
             Section {
@@ -28,10 +36,16 @@ struct FFlagScreen: View {
                     message = FFlagStore.save(text) ?? "Reset"
                 }
                 if let message {
-                    Text(message).foregroundStyle(message == "Saved" || message == "Reset" ? .green : .red)
+                    Text(message).foregroundStyle(
+                        message == "Saved" || message == "Reset" ? .green : .red)
                 }
             }
         }
         .navigationTitle("FastFlags")
+        .onAppear { refreshFflags() }
+    }
+
+    func refreshFflags() {
+        text = FFlagStore.load()
     }
 }
