@@ -144,7 +144,7 @@ enum FFlagPreset {
 
         flags[voxelizerFlag] = pauseVoxelizer ? "True" : nil
         flags[skyGrayFlag] = skyGray ? "True" : nil
-        flags[parallelLuaWorkers] = Int(pararellWorkers) > 8 ? Int(pararellWorkers) : nil // 8 is roblox's default i think
+        flags[parallelLuaWorkers] = Int(pararellWorkers) > 8 ? Int(pararellWorkers) : nil  // 8 is roblox's default i think
         flags[msaaFlag] = msaa > 0 ? Int(msaa) : nil  // 0 = auto, so remove the flag
 
         guard
@@ -155,4 +155,22 @@ enum FFlagPreset {
 
         return FFlagStore.save(json)
     }
+}
+
+func fetchFlags(url: URL) async throws -> String {
+    let (data, response) = try await URLSession.shared.data(from: url)
+
+    guard let http = response as? HTTPURLResponse,
+        (200...299).contains(http.statusCode)
+    else {
+        throw URLError(.badServerResponse)
+    }
+
+    guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+        throw URLError(.cannotParseResponse)
+    }
+    let pretty = try JSONSerialization.data(
+        withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
+
+    return String(decoding: pretty, as: UTF8.self)
 }
